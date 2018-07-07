@@ -1,207 +1,185 @@
-/*
-    Crear el modulo ToDoList
-    El modulo debera tener los metodos necesarios para Agregar, Editar, Mostrar Todos, Buscar y Eliminar.
-    Una tarea contiene las siguientes propiedades: id, titulo, descripcion y completado
-    Se tiene que poder editar titulo y descripcion de una tarea
-    Cambiar a estado completado y descompletado(?) una tarea
-    Eliminar una tarea o todas las tareas
-    Ordernar por A-Z y Z-A las tareas ya sea por titulo como por ID
-    Las tareas Deberan quedar persistidas mediante localstorage y poder mostrarse en caso de recargar el browser
-*/
+//CARGA PRODUCTOS
 
-function constructorTarea(_titulo, _descripcion, _id) {
-    this.titulo = _titulo;
-    this.descripcion = _descripcion;
-    this.id = _id;
-    this.completado = false;
-}
-
-function getTareas() {
-    var tareasGuardadas = localStorage.getItem('arrayTareas');
-    arrayTareas = JSON.parse(tareasGuardadas);
-    return arrayTareas;
-}
-
-function guardarTareas(arrayTareas) {
-    var tareasString = JSON.stringify(arrayTareas);
-    localStorage.setItem('arrayTareas', tareasString);
-}
-
-function nuevaTarea() {
-    var titulo = document.getElementById('inputTitulo').value;
-    var descripcion = document.getElementById('inputDescripcion').value;
-    if (localStorage.arrayTareas != undefined) {
-        var arrayTareas = getTareas();
-        var id = arrayTareas.length + 1;
-        id = id.toString();
-    } else {
-        var id = 1;
-        id = id.toString();
+var productos = [
+    {
+        codigo: '001',
+        nombre: 'Leche'
+    },
+    {
+        codigo: '002',
+        nombre: 'Harina'
+    },
+    {
+        codigo: '003',
+        nombre: 'Arroz'
     }
+];
 
-    agregarTarea(titulo, descripcion, id);
-}
+function constructorProducto(_codigo, _nombre) {
+    this.codigo = _codigo;
+    this.nombre = _nombre;
+    this.cantidad = function(codigoProducto, entradas, salidas) {
+        var cantidadEntrada = 0;
+        var cantidadSalida = 0;
 
-function agregarTarea(titulo, descripcion, id) {
-    var tarea = new constructorTarea(titulo, descripcion, id);
-
-    if (localStorage.arrayTareas == undefined) {
-        var arrayTareas = [];
-        arrayTareas.push(tarea);
-    } else {
-        var arrayTareas = getTareas();
-        arrayTareas.push(tarea);
-    }
-    guardarTareas(arrayTareas);
-    document.getElementById('formIngreso').reset();
-}
-
-function buscarTarea(array, id) {
-    for (i = 0; i < array.length; i++) {
-        if (id == array[i].id) {
-            var index = i;
+        for (e = 0; e < entradas.length; e++) {
+            if (entradas[e].codigo == codigoProducto) {
+                cantidadEntrada += entradas[e].cantidad;
+            }
         }
-    }
-    return index;
-}
-
-function toggleCompletar(tarea) {
-    var arrayTareas = getTareas();
-    var idSeleccionado = tarea.parentElement.nextSibling.innerText;
-    var indexSeleccionado = buscarTarea(arrayTareas, idSeleccionado);
-    if (arrayTareas[indexSeleccionado].completado == false) {
-        arrayTareas[indexSeleccionado].completado = true;
-    } else {
-        arrayTareas[indexSeleccionado].completado = false;
-    }
-    guardarTareas(arrayTareas);
-    mostrarTodo();
-}
-
-function mostrarTodo() {
-    if (localStorage.arrayTareas != undefined) {
-        var arrayTareas = getTareas();
-        var listaPorCompletar = document.getElementById('tareasPorCompletar');
-        listaPorCompletar.innerHTML = '';
-        var listaCompletadas = document.getElementById('tareasCompletadas');
-        listaCompletadas.innerHTML = '';
-
-        for (i = 0; i < arrayTareas.length; i++) {
-            if (arrayTareas[i].completado == false) {
-                listaPorCompletar.innerHTML += '<div class="card text-center mb-3" data-id="' + arrayTareas[i].id + '"><div class="card-body"><h5 class="card-title">' + arrayTareas[i].titulo + '</h5><p class="card-text">' + arrayTareas[i].descripcion + '</p><button type="button" class="btn btn-outline-warning" onclick="toggleCompletar(this)">Completar</button></div><div class="card-footer text-muted">' + arrayTareas[i].id + '</div></div>';
-            } else {
-                listaCompletadas.innerHTML += '<div class="card text-center mb-3" data-id="' + arrayTareas[i].id + '"><div class="card-body"><h5 class="card-title">' + arrayTareas[i].titulo + '</h5><p class="card-text">' + arrayTareas[i].descripcion + '</p><button type="button" class="btn btn-success" onclick="toggleCompletar(this)">Completado</button></div><div class="card-footer text-muted">' + arrayTareas[i].id + '</div></div>';
+        for (s = 0; s < salidas.length; s++) {
+            if (salidas[s].codigo == codigoProducto) {
+                cantidadSalida += salidas[s].cantidad;
             }
         }
 
-        document.getElementById('ordenarPor').style.display = 'block';
-    }
+        return cantidadEntrada - cantidadSalida;
+    };
 }
 
-function ordenarTareas() {
-    var arrayTareas = getTareas();
-    var criterio = document.getElementById('inputGroupSelect01').value;
-
-    if (criterio !== '') {
-        if (criterio == '1' || criterio == '2') {
-            arrayTareas.sort(function (a, b) {
-                var x = a.titulo.toLowerCase();
-                var y = b.titulo.toLowerCase();
-                if (x < y) { return -1; }
-                if (x > y) { return 1; }
-                return 0;
-            });
-        } else if (criterio == '3') {
-            arrayTareas.sort(function (a, b) {
-                var x = a.id.toLowerCase();
-                var y = b.id.toLowerCase();
-                if (x < y) { return -1; }
-                if (x > y) { return 1; }
-                return 0;
-            });
-        }
-        if (criterio == '2') {
-            arrayTareas.reverse();
-        }
-
-        guardarTareas(arrayTareas);
-        mostrarTodo();
-    }
-}
-
-//Edicion--------------------------------------------------------
-
-function mostrarTarea() {
-    if (localStorage.arrayTareas != undefined) {
-        var arrayTareas = getTareas();
-        var id = document.getElementById('inputId').value;
-        var indexBuscado = buscarTarea(arrayTareas, id);
-        document.getElementById('inputTituloBuscado').value = arrayTareas[indexBuscado].titulo;
-        document.getElementById('inputDescripcionBuscado').value = arrayTareas[indexBuscado].descripcion;
-
-        document.getElementById('inputId').disabled = true;
-        document.getElementById('editarBtn').disabled = false;
-        document.getElementById('eliminarBtn').disabled = false;
-    }
-}
-
-function activarEdicion() {
-    document.getElementById('inputTituloBuscado').disabled = false;
-    document.getElementById('inputDescripcionBuscado').disabled = false;
-    document.getElementById('modificarBtn').disabled = false;
-    document.getElementById('inputId').disabled = true;
-}
-
-function modificarTarea() {
-    var arrayTareas = getTareas();
-    var id = document.getElementById('inputId').value;
-    var indexBuscado = buscarTarea(arrayTareas, id);
-    var nuevoTitulo = document.getElementById('inputTituloBuscado').value;
-    var nuevaDescripcion = document.getElementById('inputDescripcionBuscado').value;
-
-    arrayTareas[indexBuscado].titulo = nuevoTitulo;
-    arrayTareas[indexBuscado].descripcion = nuevaDescripcion;
-
-    guardarTareas(arrayTareas);
-    if (document.getElementById('tareasPorCompletar').innerHTML !== '' || document.getElementById('tareasCompletadas').innerHTML !== '') {
-        mostrarTodo()
-    }
-
-    resetearFormBusqueda();
-}
-
-function eliminarTarea() {
-    var arrayTareas = getTareas();
-    var id = document.getElementById('inputId').value;
-    var indexBuscado = buscarTarea(arrayTareas, id);
-    arrayTareas.splice(indexBuscado, 1);
-    if (arrayTareas.length == 0) {
-        localStorage.removeItem('arrayTareas');
+function cargarProducto(producto) {
+    if (localStorage.productos == undefined) {
+        //var productos = [];
+        productos.push(producto);
     } else {
-        guardarTareas(arrayTareas);
+        var productosGuardados = localStorage.getItem('productos');
+        productos = JSON.parse(productosGuardados);
+        productos.push(producto);
     }
-
-    if (document.getElementById('tareasPorCompletar').innerHTML !== '' || document.getElementById('tareasCompletadas').innerHTML !== '') {
-        mostrarTodo()
-    }
-
-    resetearFormBusqueda();
+    var productosString = JSON.stringify(productos);
+    localStorage.setItem('productos', productosString);
 }
 
-function eliminarTodo() {
-    if (localStorage.arrayTareas != undefined) {
-        localStorage.removeItem('arrayTareas');
+function crearProducto() {
+    var codigo = document.getElementById('inputCodigo').value;
+    var nombre = document.getElementById('inputNombre').value;
+
+    if (codigo !== '' && nombre !== '') {
+        var producto = new constructorProducto(codigo, nombre);
+        cargarProducto(producto);
+        document.getElementById('formIngresoProductos').reset();
+    }
+}
+
+function productosMain() {
+    document.getElementById('guardarProducto').addEventListener('click', function () {
+        crearProducto();
+    });
+}
+
+// ENTRADAS/SALIDAS
+
+function generarOpcionesProductos() {
+    var productos = JSON.parse(localStorage.productos);
+    var listaProductos = '';
+
+    for (var i = productos.length - 1; i >= 0; i--) {
+        listaProductos += "<option value='" + productos[i].codigo + "'>" + productos[i].nombre + "</option>"
     }
 
-    resetearFormBusqueda();
+    if (listaProductos != "") {
+        document.getElementById("dropdownEntrada").innerHTML += listaProductos;
+        document.getElementById("dropdownSalida").innerHTML += listaProductos;
+    }
 }
 
-function resetearFormBusqueda() {
-    document.getElementById('formBusqueda').reset();
-    document.getElementById('inputId').disabled = false;
-    document.getElementById('inputTituloBuscado').disabled = true;
-    document.getElementById('inputDescripcionBuscado').disabled = true;
-    document.getElementById('editarBtn').disabled = true;
-    document.getElementById('modificarBtn').disabled = true;
-    document.getElementById('eliminarBtn').disabled = true;
+function constructorEntrada(_codigo, _cantidad, _lote) {
+    this.codigo = _codigo;
+    this.cantidad = _cantidad;
+    this.lote = _lote;
 }
+
+function nuevaEntrada() {
+    var codigo = document.getElementById("dropdownEntrada").value;
+    var cantidad = document.getElementById("cantidadEntrada").value;
+    cantidad = parseInt(cantidad);
+    var lote = document.getElementById("loteEntrada").value;
+
+    if (codigo !== '' && cantidad !== '' && lote !== '') {
+        var nuevaEntrada = new constructorEntrada(codigo, cantidad, lote);
+        cargarEntradas(nuevaEntrada);
+        document.getElementById('formEntradas').reset();
+    }
+}
+
+function cargarEntradas(entrada) {
+    if (localStorage.entradas == undefined) {
+        var entradas = [];
+        entradas.push(entrada);
+    }
+    else {
+        var entradasGuardadas = localStorage.entradas;
+        var entradas = JSON.parse(entradasGuardadas);
+        entradas.push(entrada);
+    }
+    var entradasString = JSON.stringify(entradas);
+    localStorage.setItem('entradas', entradasString);
+}
+
+function constructorSalida(_codigo, _cantidad, _lote) {
+    this.codigo = _codigo;
+    this.cantidad = _cantidad;
+    this.lote = _lote;
+}
+
+function nuevaSalida() {
+    var codigo = document.getElementById("dropdownSalida").value;
+    var cantidad = document.getElementById("cantidadSalida").value;
+    cantidad = parseInt(cantidad);
+    var lote = document.getElementById("loteSalida").value;
+
+    if (codigo !== '' && cantidad !== '' && lote !== '') {
+        var nuevaSalida = new constructorSalida(codigo, cantidad, lote);
+        cargarSalidas(nuevaSalida);
+        document.getElementById('formSalidas').reset();
+    }
+}
+
+function cargarSalidas(salida) {
+    if (localStorage.salidas == undefined) {
+        var salidas = [];
+        salidas.push(salida);
+    }
+    else {
+        var salidasGuardadas = localStorage.Salidas;
+        var salidas = JSON.parse(salidasGuardadas);
+        salidas.push(salida);
+    }
+    var salidasString = JSON.stringify(salidas);
+    localStorage.setItem('salidas', salidasString);
+}
+
+//STOCK
+
+function mostrarStock() {
+    var productos = JSON.parse(localStorage.productos);
+    var entradas = JSON.parse(localStorage.entradas);
+    var salidas = JSON.parse(localStorage.salidas);
+    var cantidad;
+    var tablaStock = document.getElementById('tablaStock');
+    tablaStock.innerHTML = '';
+
+    for (i = 0; i < productos.length; i++) {
+        cantidad = calcularCantidad(productos[i].codigo, entradas, salidas);
+        tablaStock.innerHTML += "<tr><td>" + productos[i].codigo + "</td><td>" + productos[i].nombre + "</td><td>" + cantidad + "</td></tr>";
+    }
+}
+
+function calcularCantidad(codigoProducto, entradas, salidas) {
+    var cantidadEntrada = 0;
+    var cantidadSalida = 0;
+
+    for (e = 0; e < entradas.length; e++) {
+        if (entradas[e].codigo == codigoProducto) {
+            cantidadEntrada += entradas[e].cantidad;
+        }
+    }
+    for (s = 0; s < salidas.length; s++) {
+        if (salidas[s].codigo == codigoProducto) {
+            cantidadSalida += salidas[s].cantidad;
+        }
+    }
+
+    return cantidadEntrada - cantidadSalida;
+};
+
