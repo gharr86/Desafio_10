@@ -18,23 +18,6 @@ var productos = [
 function constructorProducto(_codigo, _nombre) {
     this.codigo = _codigo;
     this.nombre = _nombre;
-    this.cantidad = function(codigoProducto, entradas, salidas) {
-        var cantidadEntrada = 0;
-        var cantidadSalida = 0;
-
-        for (e = 0; e < entradas.length; e++) {
-            if (entradas[e].codigo == codigoProducto) {
-                cantidadEntrada += entradas[e].cantidad;
-            }
-        }
-        for (s = 0; s < salidas.length; s++) {
-            if (salidas[s].codigo == codigoProducto) {
-                cantidadSalida += salidas[s].cantidad;
-            }
-        }
-
-        return cantidadEntrada - cantidadSalida;
-    };
 }
 
 function cargarProducto(producto) {
